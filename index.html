@@ -1,0 +1,763 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guardian Angel | Message Safety Checker</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Devanagari:wght@400;500;600;700&family=Noto+Sans+Gurmukhi:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <style>
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            font-family: "Inter", "Noto Sans Devanagari",
+                         "Noto Sans Gurmukhi", sans-serif;
+            background: #f3f7fb;
+            color: #203047;
+            font-size: 18px;
+            line-height: 1.7;
+        }
+
+        header {
+            background: #123c69;
+            color: white;
+            text-align: center;
+            padding: 28px 16px;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 36px;
+        }
+
+        header p {
+            margin: 8px 0 0;
+            font-size: 19px;
+        }
+
+        main {
+            width: 92%;
+            max-width: 850px;
+            margin: 30px auto;
+        }
+
+        .card {
+            background: white;
+            padding: 28px;
+            margin-bottom: 24px;
+            border-radius: 16px;
+            box-shadow: 0 4px 18px rgba(20, 40, 70, 0.08);
+        }
+
+        h2 {
+            color: #123c69;
+            margin-top: 0;
+        }
+
+        label {
+            display: block;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        textarea,
+        select {
+            width: 100%;
+            padding: 14px;
+            font: inherit;
+            border: 2px solid #a8b9cc;
+            border-radius: 10px;
+            background: white;
+            color: #203047;
+        }
+
+        textarea {
+            min-height: 180px;
+            resize: vertical;
+        }
+
+        textarea:focus,
+        select:focus {
+            outline: 3px solid #8bc7ff;
+            border-color: #1769aa;
+        }
+
+        button {
+            width: 100%;
+            margin-top: 16px;
+            padding: 16px;
+            border: none;
+            border-radius: 10px;
+            background: #1769aa;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #104d80;
+        }
+
+        button:disabled {
+            background: #718096;
+            cursor: wait;
+        }
+
+        .hint {
+            color: #52647a;
+            font-size: 16px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .risk {
+            padding: 16px;
+            border-radius: 10px;
+            margin: 16px 0;
+            font-weight: bold;
+        }
+
+        .risk-low {
+            background: #e1f5e8;
+            color: #175c32;
+        }
+
+        .risk-medium {
+            background: #fff0c2;
+            color: #744d00;
+        }
+
+        .risk-high {
+            background: #fde4e4;
+            color: #8b2020;
+        }
+
+        .result-section {
+            margin-top: 22px;
+        }
+
+        .result-section h3 {
+            color: #123c69;
+        }
+
+        li {
+            margin-bottom: 10px;
+        }
+
+        .safety-note,
+        .recommendation {
+            background: #edf4fb;
+            padding: 16px;
+            border-left: 5px solid #1769aa;
+            border-radius: 6px;
+            margin: 16px 0;
+        }
+
+        .error {
+            color: #a61b1b;
+            font-weight: bold;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            color: #52647a;
+            font-size: 15px;
+        }
+
+        @media (max-width: 600px) {
+            header h1 {
+                font-size: 29px;
+            }
+
+            main {
+                width: 94%;
+                margin: 18px auto;
+            }
+
+            .card {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>🛡️ Guardian Angel</h1>
+        <p id="tagline">Your friendly assistant for safer messages</p>
+    </header>
+
+    <main>
+        <section class="card">
+            <h2 id="form-title">Check a Message</h2>
+
+            <p id="intro">
+                Received a suspicious message? Paste it below.
+                Guardian Angel will help you identify possible warning signs.
+            </p>
+
+            <form id="analyze-form">
+                <label id="language-label" for="language">
+                    Choose your language
+                </label>
+
+                <select id="language" name="language">
+                    <option value="English">English</option>
+                    <option value="Hindi">हिन्दी (Hindi)</option>
+                    <option value="Punjabi">ਪੰਜਾਬੀ (Punjabi)</option>
+                </select>
+
+                <br><br>
+
+                <label id="message-label" for="message">
+                    Paste your message here
+                </label>
+
+                <textarea
+                    id="message"
+                    maxlength="5000"
+                    placeholder="Paste the message you want to check here."
+                    required
+                ></textarea>
+
+                <p class="hint" id="privacy-hint">
+                    Please do not include real passwords, OTPs, bank details,
+                    or other private information.
+                </p>
+
+                <button id="analyze-button" type="submit">
+                    Analyze Message
+                </button>
+            </form>
+
+            <p id="status" role="status" aria-live="polite"></p>
+        </section>
+
+        <section id="results" class="card hidden" aria-live="polite">
+            <h2 id="results-title">Analysis Results</h2>
+
+            <div id="risk-box" class="risk"></div>
+
+            <div id="recommendation" class="recommendation" role="status"></div>
+
+            <div class="result-section">
+                <h3 id="warning-title">Warning Signs</h3>
+                <ul id="warning-signs"></ul>
+            </div>
+
+            <div class="result-section">
+                <h3 id="explanations-title">Why These Signs Matter</h3>
+                <ul id="explanations"></ul>
+            </div>
+
+            <div class="result-section">
+                <h3 id="advice-title">Guardian Angel's Advice</h3>
+                <p id="ai-explanation"></p>
+                <p class="hint" id="explanation-source"></p>
+            </div>
+
+            <div class="result-section safety-note">
+                <strong id="remember-title">Remember:</strong>
+                <p id="safety-note"></p>
+            </div>
+        </section>
+    
+        <section class="card" id="chat-card">
+            <h2>💬 Chat with Guardian Angel</h2>
+
+            <p class="hint">
+                Ask questions about suspicious messages, OTPs,
+                online scams, and staying safe on the internet.
+            </p>
+
+            <label for="chat-language">Chat language</label>
+            <select id="chat-language">
+                <option value="English">English</option>
+                <option value="Hindi">हिन्दी (Hindi)</option>
+                <option value="Punjabi">ਪੰਜਾਬੀ (Punjabi)</option>
+            </select>
+
+            <div
+                id="chat-messages"
+                role="log"
+                aria-live="polite"
+                style="margin-top:20px; min-height:100px;
+                       max-height:350px; overflow-y:auto;
+                       padding:12px; background:#f3f7fb;
+                       border-radius:10px;"
+            >
+                <p>
+                    <strong>Guardian Angel:</strong>
+                    Hello! Ask me how to stay safe online.
+                </p>
+            </div>
+
+            <form id="chat-form">
+                <label for="chat-input">Your question</label>
+                <textarea
+                    id="chat-input"
+                    maxlength="2000"
+                    minlength="1"
+                    rows="3"
+                    style="min-height:90px;"
+                    placeholder="Type your cyber-safety question..."
+                    required
+                ></textarea>
+
+                <button id="chat-button" type="submit">
+                    Send Message
+                </button>
+
+                <p id="chat-status" role="status"
+                   aria-live="polite" class="hint"></p>
+            </form>
+        </section>
+    
+    </main>
+
+    <footer>
+        <span id="footer-message">
+            Guardian Angel — helping you pause, check, and stay safe online.
+        </span>
+        <br>
+        <span id="footer-warning">
+            Automated analysis can make mistakes. Always verify unexpected
+            requests using a trusted official contact method.
+        </span>
+    </footer>
+
+    <script>
+        const form = document.getElementById("analyze-form");
+        const messageInput = document.getElementById("message");
+        const languageInput = document.getElementById("language");
+        const analyzeButton = document.getElementById("analyze-button");
+        const statusText = document.getElementById("status");
+        const results = document.getElementById("results");
+        const recommendation = document.getElementById("recommendation");
+        const riskBox = document.getElementById("risk-box");
+
+        const translations = {
+            English: {
+                tagline: "Your friendly assistant for safer messages",
+                formTitle: "Check a Message",
+                intro: "Received a suspicious message? Paste it below. Guardian Angel will help you identify possible warning signs.",
+                languageLabel: "Choose your language",
+                messageLabel: "Paste your message here",
+                placeholder: "Paste the message you want to check here.",
+                privacyHint: "Please do not include real passwords, OTPs, bank details, or other private information.",
+                button: "Analyze Message",
+                analyzing: "Analyzing...",
+                waiting: "Checking your message. Please wait...",
+                complete: "Analysis complete.",
+                emptyMessage: "Please enter a message first.",
+                resultsTitle: "Analysis Results",
+                warningTitle: "Warning Signs",
+                noWarnings: "No known warning signs were detected by our current checks.",
+                explanationsTitle: "Why These Signs Matter",
+                noExplanations: "There are no specific warning signs to explain.",
+                adviceTitle: "Guardian Angel's Advice",
+                rememberTitle: "Remember:",
+                fallbackAdvice: "AI explanation is unavailable. Please review the warning signs above.",
+                aiSource: "Explanation generated by the local AI model.",
+                fallbackSource: "Rule-based explanation shown because the AI explanation was unavailable.",
+                safetyNote: "These warning signs do not prove that a message is fraudulent. Verify unexpected requests through an official contact method.",
+                footerMessage: "Guardian Angel — helping you pause, check, and stay safe online.",
+                footerWarning: "Automated analysis can make mistakes. Always verify unexpected requests using a trusted official contact method.",
+                riskLevel: "Risk Level",
+                riskScore: "Risk Score",
+                low: "Low",
+                medium: "Medium",
+                high: "High",
+                unknown: "Unknown",
+                highAdvice: "High risk: Be very careful. Do not share passwords, OTPs, or banking details, and do not click unexpected links. Verify the request using an official contact method you find independently.",
+                mediumAdvice: "Caution: Pause and check the message. Avoid sharing sensitive information, and verify the sender before taking action.",
+                lowAdvice: "No known warning signs were detected. This does not guarantee the message is safe. Be cautious with unexpected requests and links.",
+                unknownAdvice: "We could not determine the risk level reliably. Be cautious and verify unexpected requests independently.",
+                requestError: "We couldn't analyze the message. Please check that the Guardian Angel server is running and try again."
+            },
+
+            Hindi: {
+                tagline: "संदेशों को सुरक्षित रूप से समझने में आपका साथी",
+                formTitle: "संदेश की जाँच करें",
+                intro: "क्या आपको कोई संदिग्ध संदेश मिला है? उसे नीचे डालें। Guardian Angel संभावित चेतावनी संकेत पहचानने में मदद करेगा।",
+                languageLabel: "अपनी भाषा चुनें",
+                messageLabel: "यहाँ संदेश डालें",
+                placeholder: "जाँच करने के लिए संदेश यहाँ डालें।",
+                privacyHint: "कृपया असली पासवर्ड, OTP, बैंक विवरण या अन्य निजी जानकारी न डालें।",
+                button: "संदेश की जाँच करें",
+                analyzing: "जाँच हो रही है...",
+                waiting: "संदेश की जाँच हो रही है। कृपया प्रतीक्षा करें...",
+                complete: "जाँच पूरी हुई।",
+                emptyMessage: "कृपया पहले कोई संदेश लिखें।",
+                resultsTitle: "जाँच के परिणाम",
+                warningTitle: "चेतावनी के संकेत",
+                noWarnings: "हमारी मौजूदा जाँच में कोई ज्ञात चेतावनी संकेत नहीं मिला।",
+                explanationsTitle: "ये संकेत क्यों महत्वपूर्ण हैं",
+                noExplanations: "समझाने के लिए कोई विशेष चेतावनी संकेत नहीं है।",
+                adviceTitle: "Guardian Angel की सलाह",
+                rememberTitle: "याद रखें:",
+                fallbackAdvice: "AI की व्याख्या उपलब्ध नहीं है। कृपया ऊपर दिए गए चेतावनी संकेत देखें।",
+                aiSource: "व्याख्या स्थानीय AI मॉडल ने बनाई है।",
+                fallbackSource: "AI उपलब्ध न होने के कारण नियम-आधारित व्याख्या दिखाई गई है।",
+                safetyNote: "ये चेतावनी संकेत यह साबित नहीं करते कि संदेश धोखाधड़ी है। अप्रत्याशित अनुरोधों की पुष्टि किसी आधिकारिक संपर्क माध्यम से करें।",
+                footerMessage: "Guardian Angel — रुकें, जाँचें और ऑनलाइन सुरक्षित रहें।",
+                footerWarning: "स्वचालित जाँच में गलती हो सकती है। अप्रत्याशित अनुरोधों की आधिकारिक माध्यम से पुष्टि करें।",
+                riskLevel: "जोखिम स्तर",
+                riskScore: "जोखिम स्कोर",
+                low: "कम",
+                medium: "मध्यम",
+                high: "ज़्यादा",
+                unknown: "अज्ञात",
+                highAdvice: "ज़्यादा जोखिम: सावधान रहें। पासवर्ड, OTP या बैंक विवरण साझा न करें और अनजान लिंक पर क्लिक न करें। आधिकारिक संपर्क माध्यम से अनुरोध की पुष्टि करें।",
+                mediumAdvice: "सावधानी रखें: रुकें और संदेश की जाँच करें। निजी जानकारी साझा न करें और कार्रवाई करने से पहले भेजने वाले की पुष्टि करें।",
+                lowAdvice: "कोई ज्ञात चेतावनी संकेत नहीं मिला। इसका अर्थ यह नहीं कि संदेश सुरक्षित है। अनजान अनुरोधों और लिंक से सावधान रहें।",
+                unknownAdvice: "जोखिम का स्तर भरोसे के साथ तय नहीं हो सका। सावधान रहें और अनुरोध की स्वतंत्र रूप से पुष्टि करें।",
+                requestError: "संदेश की जाँच नहीं हो सकी। कृपया सर्वर की जाँच करें और फिर प्रयास करें।"
+            },
+
+            Punjabi: {
+                tagline: "ਸੁਨੇਹਿਆਂ ਨੂੰ ਸੁਰੱਖਿਅਤ ਤਰੀਕੇ ਨਾਲ ਸਮਝਣ ਲਈ ਤੁਹਾਡਾ ਸਾਥੀ",
+                formTitle: "ਸੁਨੇਹੇ ਦੀ ਜਾਂਚ ਕਰੋ",
+                intro: "ਕੀ ਤੁਹਾਨੂੰ ਕੋਈ ਸ਼ੱਕੀ ਸੁਨੇਹਾ ਮਿਲਿਆ ਹੈ? ਉਸਨੂੰ ਹੇਠਾਂ ਪਾਓ। Guardian Angel ਸੰਭਾਵੀ ਖ਼ਤਰੇ ਦੇ ਸੰਕੇਤ ਪਛਾਣਨ ਵਿੱਚ ਮਦਦ ਕਰੇਗਾ।",
+                languageLabel: "ਆਪਣੀ ਭਾਸ਼ਾ ਚੁਣੋ",
+                messageLabel: "ਆਪਣਾ ਸੁਨੇਹਾ ਇੱਥੇ ਪਾਓ",
+                placeholder: "ਜਾਂਚ ਲਈ ਸੁਨੇਹਾ ਇੱਥੇ ਪਾਓ।",
+                privacyHint: "ਕਿਰਪਾ ਕਰਕੇ ਅਸਲੀ ਪਾਸਵਰਡ, OTP, ਬੈਂਕ ਵੇਰਵੇ ਜਾਂ ਹੋਰ ਨਿੱਜੀ ਜਾਣਕਾਰੀ ਨਾ ਪਾਓ।",
+                button: "ਸੁਨੇਹੇ ਦੀ ਜਾਂਚ ਕਰੋ",
+                analyzing: "ਜਾਂਚ ਜਾਰੀ ਹੈ...",
+                waiting: "ਤੁਹਾਡੇ ਸੁਨੇਹੇ ਦੀ ਜਾਂਚ ਹੋ ਰਹੀ ਹੈ। ਕਿਰਪਾ ਕਰਕੇ ਉਡੀਕ ਕਰੋ...",
+                complete: "ਜਾਂਚ ਪੂਰੀ ਹੋ ਗਈ।",
+                emptyMessage: "ਕਿਰਪਾ ਕਰਕੇ ਪਹਿਲਾਂ ਸੁਨੇਹਾ ਲਿਖੋ।",
+                resultsTitle: "ਜਾਂਚ ਦੇ ਨਤੀਜੇ",
+                warningTitle: "ਚੇਤਾਵਨੀ ਦੇ ਸੰਕੇਤ",
+                noWarnings: "ਮੌਜੂਦਾ ਜਾਂਚ ਵਿੱਚ ਕੋਈ ਜਾਣਿਆ ਚੇਤਾਵਨੀ ਸੰਕੇਤ ਨਹੀਂ ਮਿਲਿਆ।",
+                explanationsTitle: "ਇਹ ਸੰਕੇਤ ਕਿਉਂ ਮਹੱਤਵਪੂਰਨ ਹਨ",
+                noExplanations: "ਸਮਝਾਉਣ ਲਈ ਕੋਈ ਖ਼ਾਸ ਚੇਤਾਵਨੀ ਸੰਕੇਤ ਨਹੀਂ ਹੈ।",
+                adviceTitle: "Guardian Angel ਦੀ ਸਲਾਹ",
+                rememberTitle: "ਯਾਦ ਰੱਖੋ:",
+                fallbackAdvice: "AI ਦੀ ਵਿਆਖਿਆ ਉਪਲਬਧ ਨਹੀਂ ਹੈ। ਉੱਪਰ ਦਿੱਤੇ ਚੇਤਾਵਨੀ ਸੰਕੇਤ ਵੇਖੋ।",
+                aiSource: "ਵਿਆਖਿਆ ਸਥਾਨਕ AI ਮਾਡਲ ਨੇ ਤਿਆਰ ਕੀਤੀ ਹੈ।",
+                fallbackSource: "AI ਉਪਲਬਧ ਨਾ ਹੋਣ ਕਰਕੇ ਨਿਯਮਾਂ ਅਧਾਰਿਤ ਵਿਆਖਿਆ ਦਿਖਾਈ ਗਈ ਹੈ।",
+                safetyNote: "ਇਹ ਚੇਤਾਵਨੀ ਸੰਕੇਤ ਇਹ ਸਾਬਤ ਨਹੀਂ ਕਰਦੇ ਕਿ ਸੁਨੇਹਾ ਧੋਖਾਧੜੀ ਹੈ। ਅਚਾਨਕ ਆਈ ਬੇਨਤੀ ਦੀ ਅਧਿਕਾਰਤ ਸੰਪਰਕ ਰਾਹੀਂ ਪੁਸ਼ਟੀ ਕਰੋ।",
+                footerMessage: "Guardian Angel — ਰੁਕੋ, ਜਾਂਚੋ ਅਤੇ ਆਨਲਾਈਨ ਸੁਰੱਖਿਅਤ ਰਹੋ।",
+                footerWarning: "ਆਟੋਮੈਟਿਕ ਜਾਂਚ ਵਿੱਚ ਗਲਤੀ ਹੋ ਸਕਦੀ ਹੈ। ਅਣਉਮੀਦ ਬੇਨਤੀਆਂ ਦੀ ਅਧਿਕਾਰਤ ਤਰੀਕੇ ਨਾਲ ਪੁਸ਼ਟੀ ਕਰੋ।",
+                riskLevel: "ਖ਼ਤਰੇ ਦਾ ਪੱਧਰ",
+                riskScore: "ਖ਼ਤਰੇ ਦੇ ਅੰਕ",
+                low: "ਘੱਟ",
+                medium: "ਦਰਮਿਆਨਾ",
+                high: "ਵੱਧ",
+                unknown: "ਅਣਜਾਣ",
+                highAdvice: "ਵੱਧ ਖ਼ਤਰਾ: ਸਾਵਧਾਨ ਰਹੋ। ਪਾਸਵਰਡ, OTP ਜਾਂ ਬੈਂਕ ਵੇਰਵੇ ਸਾਂਝੇ ਨਾ ਕਰੋ ਅਤੇ ਅਣਜਾਣ ਲਿੰਕ ਨਾ ਖੋਲ੍ਹੋ। ਅਧਿਕਾਰਤ ਸੰਪਰਕ ਰਾਹੀਂ ਬੇਨਤੀ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ।",
+                mediumAdvice: "ਸਾਵਧਾਨ ਰਹੋ: ਰੁਕੋ ਅਤੇ ਸੁਨੇਹੇ ਦੀ ਜਾਂਚ ਕਰੋ। ਨਿੱਜੀ ਜਾਣਕਾਰੀ ਸਾਂਝੀ ਨਾ ਕਰੋ ਅਤੇ ਕਾਰਵਾਈ ਕਰਨ ਤੋਂ ਪਹਿਲਾਂ ਭੇਜਣ ਵਾਲੇ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ।",
+                lowAdvice: "ਕੋਈ ਜਾਣਿਆ ਚੇਤਾਵਨੀ ਸੰਕੇਤ ਨਹੀਂ ਮਿਲਿਆ। ਇਸਦਾ ਮਤਲਬ ਇਹ ਨਹੀਂ ਕਿ ਸੁਨੇਹਾ ਸੁਰੱਖਿਅਤ ਹੈ। ਅਣਜਾਣ ਬੇਨਤੀਆਂ ਅਤੇ ਲਿੰਕਾਂ ਤੋਂ ਸਾਵਧਾਨ ਰਹੋ।",
+                unknownAdvice: "ਖ਼ਤਰੇ ਦਾ ਪੱਧਰ ਭਰੋਸੇ ਨਾਲ ਤੈਅ ਨਹੀਂ ਹੋ ਸਕਿਆ। ਸਾਵਧਾਨ ਰਹੋ ਅਤੇ ਬੇਨਤੀ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ।",
+                requestError: "ਸੁਨੇਹੇ ਦੀ ਜਾਂਚ ਨਹੀਂ ਹੋ ਸਕੀ। ਸਰਵਰ ਦੀ ਜਾਂਚ ਕਰੋ ਅਤੇ ਦੁਬਾਰਾ ਕੋਸ਼ਿਸ਼ ਕਰੋ।"
+            }
+        };
+
+        const warningTranslations = {
+            English: {
+                "account will be blocked": "Account will be blocked",
+                "click this link": "Click this link",
+                "verify your account": "Verify your account",
+                "urgent": "Urgent",
+                "send your otp": "Send your OTP",
+                "claim your prize": "Claim your prize"
+            },
+            Hindi: {
+                "account will be blocked": "खाता बंद कर दिया जाएगा",
+                "click this link": "इस लिंक पर क्लिक करें",
+                "verify your account": "अपने खाते की पुष्टि करें",
+                "urgent": "तुरंत करें",
+                "send your otp": "अपना OTP भेजें",
+                "claim your prize": "अपना इनाम प्राप्त करें"
+            },
+            Punjabi: {
+                "account will be blocked": "ਖਾਤਾ ਬੰਦ ਕਰ ਦਿੱਤਾ ਜਾਵੇਗਾ",
+                "click this link": "ਇਸ ਲਿੰਕ 'ਤੇ ਕਲਿੱਕ ਕਰੋ",
+                "verify your account": "ਆਪਣੇ ਖਾਤੇ ਦੀ ਪੁਸ਼ਟੀ ਕਰੋ",
+                "urgent": "ਤੁਰੰਤ ਕਰੋ",
+                "send your otp": "ਆਪਣਾ OTP ਭੇਜੋ",
+                "claim your prize": "ਆਪਣਾ ਇਨਾਮ ਪ੍ਰਾਪਤ ਕਰੋ"
+            }
+        };
+
+        function getText(key) {
+            return translations[languageInput.value][key]
+                || translations.English[key]
+                || "";
+        }
+
+        function updateInterfaceLanguage() {
+            const language = languageInput.value;
+            const t = translations[language];
+
+            document.documentElement.lang =
+                language === "Hindi" ? "hi"
+                : language === "Punjabi" ? "pa" : "en";
+
+            document.getElementById("tagline").textContent = t.tagline;
+            document.getElementById("form-title").textContent = t.formTitle;
+            document.getElementById("intro").textContent = t.intro;
+            document.getElementById("language-label").textContent = t.languageLabel;
+            document.getElementById("message-label").textContent = t.messageLabel;
+            messageInput.placeholder = t.placeholder;
+            document.getElementById("privacy-hint").textContent = t.privacyHint;
+            document.getElementById("results-title").textContent = t.resultsTitle;
+            document.getElementById("warning-title").textContent = t.warningTitle;
+            document.getElementById("explanations-title").textContent = t.explanationsTitle;
+            document.getElementById("advice-title").textContent = t.adviceTitle;
+            document.getElementById("remember-title").textContent = t.rememberTitle;
+            document.getElementById("footer-message").textContent = t.footerMessage;
+            document.getElementById("footer-warning").textContent = t.footerWarning;
+
+            if (!analyzeButton.disabled) {
+                analyzeButton.textContent = t.button;
+            }
+
+            if (results.dataset.hasResults === "true") {
+                renderResults(window.lastAnalysisData);
+            }
+        }
+
+        function addListItems(elementId, items, emptyMessage) {
+            const list = document.getElementById(elementId);
+            list.replaceChildren();
+
+            if (!Array.isArray(items) || items.length === 0) {
+                const item = document.createElement("li");
+                item.textContent = emptyMessage;
+                list.appendChild(item);
+                return;
+            }
+
+            items.forEach((text) => {
+                const item = document.createElement("li");
+                item.textContent = String(text);
+                list.appendChild(item);
+            });
+        }
+
+        function getRecommendation(riskLevel) {
+            switch (riskLevel) {
+                case "high":
+                    return getText("highAdvice");
+                case "medium":
+                    return getText("mediumAdvice");
+                case "low":
+                    return getText("lowAdvice");
+                default:
+                    return getText("unknownAdvice");
+            }
+        }
+
+        function renderResults(data) {
+            if (!data) return;
+
+            const language = languageInput.value;
+            const t = translations[language];
+            const riskLevel = String(data.risk_level || "unknown").toLowerCase();
+
+            riskBox.className = "risk";
+            if (["low", "medium", "high"].includes(riskLevel)) {
+                riskBox.classList.add("risk-" + riskLevel);
+            }
+
+            const displayRisk = t[riskLevel] || t.unknown;
+            riskBox.textContent =
+                t.riskLevel + ": " + displayRisk +
+                " | " + t.riskScore + ": " + data.risk_score;
+
+            recommendation.textContent = getRecommendation(riskLevel);
+
+            const selectedWarningTranslations =
+                warningTranslations[language] || warningTranslations.English;
+
+            const translatedWarningSigns = (data.warning_signs || []).map(
+                phrase => selectedWarningTranslations[phrase] || phrase
+            );
+
+            addListItems(
+                "warning-signs",
+                translatedWarningSigns,
+                t.noWarnings
+            );
+
+            addListItems(
+                "explanations",
+                data.explanations,
+                t.noExplanations
+            );
+
+            document.getElementById("ai-explanation").textContent =
+                data.ai_explanation || t.fallbackAdvice;
+
+            document.getElementById("explanation-source").textContent =
+                data.explanation_source === "ollama"
+                    ? t.aiSource
+                    : t.fallbackSource;
+
+            document.getElementById("safety-note").textContent = t.safetyNote;
+
+            results.classList.remove("hidden");
+            results.dataset.hasResults = "true";
+        }
+
+        languageInput.addEventListener("change", updateInterfaceLanguage);
+
+        form.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const message = messageInput.value.trim();
+
+            if (!message) {
+                statusText.textContent = getText("emptyMessage");
+                statusText.className = "error";
+                messageInput.focus();
+                return;
+            }
+
+            analyzeButton.disabled = true;
+            analyzeButton.textContent = getText("analyzing");
+            statusText.textContent = getText("waiting");
+            statusText.className = "";
+            results.classList.add("hidden");
+            results.dataset.hasResults = "false";
+
+            try {
+                const response = await fetch("/analyze", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        language: languageInput.value
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    const detail = Array.isArray(data.detail)
+                        ? data.detail.map(item => item.msg).join(", ")
+                        : data.detail;
+
+                    throw new Error(
+                        detail || "Unable to analyze the message."
+                    );
+                }
+
+                window.lastAnalysisData = data;
+                renderResults(data);
+
+                statusText.textContent = getText("complete");
+                statusText.className = "";
+            } catch (error) {
+                console.error("Guardian Angel analysis error:", error);
+                statusText.textContent = getText("requestError");
+                statusText.className = "error";
+            } finally {
+                analyzeButton.disabled = false;
+                analyzeButton.textContent = getText("button");
+            }
+        });
+
+        // Guardian Angel chatbot
+        const chatForm = document.getElementById("chat-form");
+        const chatInput = document.getElementById("chat-input");
+        const chatLanguage = document.getElementById("chat-language");
+        const chatButton = document.getElementById("chat-button");
+        const chatMessages = document.getElementById("chat-messages");
+        const chatStatus = document.getElementById("chat-status");
+
+        function addChatMessage(sender, message) {
+            const paragraph = document.createElement("p");
+            const label = document.createElement("strong");
+
+            label.textContent = sender + ": ";
+            paragraph.appendChild(label);
+
+            // Use textContent so AI responses are treated as text,
+            // not executable HTML.
+            paragraph.appendChild(document.createTextNode(message));
+
+            chatMessages.appendChild(paragraph);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        chatForm.addEventListener("submit", async (event) => {
+            event.preventDefault();
+
+            const message = chatInput.value.trim();
+
+            if (!message) {
+                chatStatus.textContent = "Please enter a question.";
+                return;
+            }
+
+            chatButton.disabled = true;
+            chatButton.textContent = "Thinking...";
+            chatStatus.textContent = "Guardian Angel is preparing a reply.";
+
+            // Show the user's message immediately.
+            addChatMessage("You", message);
+            chatInput.value = "";
+
+            try {
+                const response = await fetch("/chat", {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        message: message,
+                        language: chatLanguage.value
+                    })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(
+                        typeof data.detail === "string"
+                            ? data.detail
+                            : "The chatbot request failed."
+                    );
+                }
+
+                addChatMessage("Guardian Angel", data.reply);
+                chatStatus.textContent = "Reply received.";
+            } catch (error) {
+                console.error("Guardian Angel chat error:", error);
+
+                addChatMessage(
+                    "Guardian Angel",
+                    "Sorry, I couldn't respond right now. Please try again."
+                );
+
+                chatStatus.textContent =
+                    "The chatbot is temporarily unavailable.";
+            } finally {
+                chatButton.disabled = false;
+                chatButton.textContent = "Send Message";
+                chatInput.focus();
+            }
+        });
+
+
+        updateInterfaceLanguage();
+    </script>
+</body>
+</html>
