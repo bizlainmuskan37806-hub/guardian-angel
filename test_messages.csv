@@ -1,0 +1,32 @@
+message,expected_label
+"URGENT! Your account will be blocked. Send your OTP immediately.",suspicious
+"Please transfer money immediately and send your bank details.",suspicious
+"Congratulations, you have won a prize. Claim your prize now.",suspicious
+"Install remote access software so we can help you.",suspicious
+"Please verify your account by clicking this link.",suspicious
+"Send me a gift card as payment.",suspicious
+"Hello, would you like to have lunch tomorrow?",ordinary
+"The meeting is scheduled for 10 AM tomorrow.",ordinary
+"Thank you for helping me yesterday.",ordinary
+"Please bring your notebook to class.",ordinary
+"Your appointment is confirmed for Friday.",ordinary
+"Happy birthday! Have a wonderful day.",ordinary
+
+"Your bank statement is ready to download.",ordinary
+"Please change your password when you have time.",ordinary
+"The teacher asked us to verify our homework answers.",ordinary
+"Could you send me the meeting link?",ordinary
+"Your account will be blocked unless you pay a fee today.",suspicious
+"You have been selected for a cash reward. Pay a small fee to receive it.",suspicious
+"Please share the code we sent you so we can release your prize.",suspicious
+"I am from technical support. Install this app and let me control your computer.",suspicious
+"Your delivery is delayed. Pay a small fee using this link.",suspicious
+"Do not tell anyone. Send the verification code now.",suspicious
+"Your electricity will be disconnected today unless you pay immediately.",suspicious
+"Please install this app so I can access your phone remotely.",suspicious
+"Your account has unusual activity. Confirm your details here.",suspicious
+"Can we move our meeting to 3 PM tomorrow?",ordinary
+"Please call me when you arrive at the office.",ordinary
+"The school trip is scheduled for next Wednesday.",ordinary
+"I received your document and will review it today.",ordinary
+"Could you help me reset my password through the official website?",ordinary
